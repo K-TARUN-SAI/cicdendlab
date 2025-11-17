@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  backend:
+    build: .
+    container_name: crms-backend
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3308/crmsdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: crmsuser
+      SPRING_DATASOURCE_PASSWORD: crmspass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: "8081"
+      JAVA_OPTS: "-Xmx512m"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - crms-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: crms-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: tarunsai@123
+      MYSQL_DATABASE: crmsdb
+      MYSQL_USER: root1
+      MYSQL_PASSWORD: tarunsai@123
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3308:3308"   
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crms-net
+
+volumes:
+  db_data:
+
+networks:
+  crms-net:
+    driver: bridge
